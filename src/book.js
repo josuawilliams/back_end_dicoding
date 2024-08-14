@@ -1,12 +1,16 @@
-const book = [
+const books = [
   {
-    id: "2387289hii",
-    title: "Harry Potter",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    tags: ["Fiction"],
-    description: "Menceritakan Tentang Seorang anak bernama harry",
+    id: "2387289",
+    name: "Harry Potter",
+    year: 2022,
+    author: "Aress",
+    summary: "Ini Merupakan Pembelajaran Sihir",
+    publisher: "Hindia",
+    pageCount: 230,
+    readPage: 20,
+    finished: false,
+    reading: true,
   },
 ];
 
-module.exports = book;
+module.exports = books;

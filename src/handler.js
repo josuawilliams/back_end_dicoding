@@ -1,31 +1,64 @@
 const { nanoid } = require("nanoid");
-const book = require("./book");
+const books = require("./book");
 
 const addBookHandler = (request, h) => {
-  const { title, tags, description } = request.payload;
+  const {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+  } = request.payload;
+
+  if (!name) {
+    const response = h.response({
+      status: "fail",
+      message: "Gagal menambahkan buku. Mohon isi nama buku",
+    });
+    response.code(400);
+    return response;
+  }
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: "fail",
+      message:
+        "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount",
+    });
+    response.code(400);
+    return response;
+  }
 
   const id = nanoid(16);
   const createdAt = new Date().toISOString();
   const updatedAt = createdAt;
 
-  const newNote = {
-    title,
-    tags,
-    description,
+  const newBook = {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
     id,
     createdAt,
     updatedAt,
   };
 
-  book.push(newNote);
-  const isSuccess = book.filter((note) => note.id === id).length > 0;
+  books.push(newBook);
+  const isSuccess = books.filter((book) => book.id === id).length > 0;
 
   if (isSuccess) {
     const response = h.response({
       status: "success",
       message: "Buku berhasil ditambahkan",
       data: {
-        noteId: id,
+        bookId: id,
       },
     });
     response.code(201);
@@ -40,23 +73,42 @@ const addBookHandler = (request, h) => {
   return response;
 };
 
-const getAllBookHandler = () => ({
-  status: "success",
-  data: {
-    book,
-  },
-});
+const getAllBookHandler = (request, h) => {
+  const dataBooks = books.map((el) => {
+    return {
+      id: el.id,
+      name: el.name,
+      publisher: el.publisher,
+    };
+  });
+
+  const response = h.response({
+    status: "success",
+    data: {
+      books: dataBooks,
+    },
+  });
+  response.code(200);
+  return response;
+};
 
 const getBookByIdHandler = (request, h) => {
   const { id } = request.params;
 
-  const note = book.filter((n) => n.id === id)[0];
+  const book = books.filter((n) => n.id === id)[0];
 
-  if (note !== undefined) {
+  if (book !== undefined) {
+    const dataBook = books.map((el) => {
+      if (el.pageCount === el.readPage) {
+        el.finished = true;
+      }
+      return el;
+    });
+
     return {
       status: "success",
       data: {
-        note,
+        books: dataBook,
       },
     };
   }
@@ -72,17 +124,51 @@ const getBookByIdHandler = (request, h) => {
 const editBookByIdHandler = (request, h) => {
   const { id } = request.params;
 
-  const { title, tags, description } = request.payload;
+  const {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+  } = request.payload;
+
+  if (!name) {
+    const response = h.response({
+      status: "fail",
+      message: "Gagal menambahkan buku. Mohon isi nama buku",
+    });
+    response.code(400);
+    return response;
+  }
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: "fail",
+      message:
+        "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount",
+    });
+    response.code(400);
+    return response;
+  }
+
   const updatedAt = new Date().toISOString();
 
-  const index = book.findIndex((note) => note.id === id);
+  const index = books.findIndex((book) => book.id === id);
 
   if (index !== -1) {
-    book[index] = {
-      ...book[index],
-      title,
-      tags,
-      description,
+    books[index] = {
+      ...books[index],
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      reading,
       updatedAt,
     };
 
@@ -105,10 +191,10 @@ const editBookByIdHandler = (request, h) => {
 const deleteBookByIdHandler = (request, h) => {
   const { id } = request.params;
 
-  const index = book.findIndex((note) => note.id === id);
+  const index = books.findIndex((book) => book.id === id);
 
   if (index !== -1) {
-    book.splice(index, 1);
+    books.splice(index, 1);
     const response = h.response({
       status: "success",
       message: "Buku berhasil dihapus",
